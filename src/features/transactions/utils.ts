@@ -1,15 +1,12 @@
-import { TRANSACTION_CATEGORIES } from './constants';
-import { SmsMessage, Transaction, TransactionType } from './types';
+import { SmsMessage, Transaction, TransactionCategory, TransactionType } from './types';
 
 const amountRegex = /(?:rs\.?|inr|\u20b9)?\s*([0-9]+(?:[.,][0-9]{1,2})?)/i;
 
 const normalize = (value: string) => value.toUpperCase();
 
-export const detectCategoryId = (message: string): string | null => {
+export const detectCategoryId = (message: string, categories: TransactionCategory[]): string | null => {
   const content = normalize(message);
-  const matched = TRANSACTION_CATEGORIES.find((category) =>
-    content.includes(category.identifier.toUpperCase())
-  );
+  const matched = categories.find((c) => c.identifier && content.includes(c.identifier.toUpperCase()));
   return matched?.id ?? null;
 };
 
@@ -23,20 +20,19 @@ export const detectType = (message: string): TransactionType => {
 
 export const parseAmount = (message: string): number | null => {
   const match = message.match(amountRegex);
-  if (!match?.[1]) {
-    return null;
-  }
+  if (!match?.[1]) return null;
   const amount = Number(match[1].replace(',', ''));
   return Number.isFinite(amount) ? amount : null;
 };
 
-export const messageToTransaction = (message: SmsMessage): Transaction | null => {
+export const messageToTransaction = (
+  message: SmsMessage,
+  categories: TransactionCategory[]
+): Transaction | null => {
   const amount = parseAmount(message.body);
-  if (!amount || amount <= 0) {
-    return null;
-  }
+  if (!amount || amount <= 0) return null;
 
-  const categoryId = detectCategoryId(message.body);
+  const categoryId = detectCategoryId(message.body, categories);
   const fallbackTitle = message.address ? `SMS from ${message.address}` : 'SMS Transaction';
 
   return {

@@ -1,6 +1,6 @@
 import { TransactionCategory } from './types';
 
-export const TRANSACTION_CATEGORIES: TransactionCategory[] = [
+export const DEFAULT_CATEGORIES: TransactionCategory[] = [
   { id: 'salary', name: 'Salary', identifier: 'SAL' },
   { id: 'food', name: 'Food', identifier: 'FOOD' },
   { id: 'rent', name: 'Rent', identifier: 'RENT' },
